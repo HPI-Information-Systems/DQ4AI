@@ -1,0 +1,349 @@
+import argparse
+import json
+import ast
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+from adjustText import adjust_text
+from pathlib import Path
+from tqdm import tqdm
+
+# plot styling config parameters
+FONT_SIZE = 49
+FONT_SIZE_TICKS = 43
+sns.set_style('whitegrid')
+plt.rcParams["axes.edgecolor"] = "0.15"
+plt.rcParams["axes.linewidth"] = 1.3
+plt.rcParams["axes.labelsize"] = FONT_SIZE
+plt.rcParams["xtick.labelsize"] = FONT_SIZE_TICKS
+plt.rcParams["ytick.labelsize"] = FONT_SIZE_TICKS
+matplotlib.rcParams.update({'font.size': FONT_SIZE})
+plt.rcParams['lines.linewidth'] = 4
+
+# algorithm baseline quality to add
+DATASET_BASE_QUALITY = {
+    'ClassBalance': {
+        'house_prices_prepared.csv': 0.7992307692307692,
+        'vw_prepared.csv': 0.8938263284129043,
+        'imdb_prepared.csv': 0.5441269841269841,
+    },
+    'Completeness': {
+        'house_prices_prepared.csv': 0.9976070747355644,
+        'vw_prepared.csv': 1.0,
+        'imdb_prepared.csv': 0.9979559486067078
+    },
+    'ConsistentRepresentation': {
+        'house_prices_prepared.csv': 1.0,
+        'vw_prepared.csv': 1.0,
+        'imdb_prepared.csv': 1.0
+    },
+    'FeatureAccuracy': {
+        'house_prices_prepared.csv': 1.0,
+        'vw_prepared.csv': 1.0,
+        'imdb_prepared.csv': 1.0
+    },
+    'TargetAccuracy': {
+        'house_prices_prepared.csv': 1.0,
+        'vw_prepared.csv': 1.0,
+        'imdb_prepared.csv': 1.0
+    },
+    'Uniqueness': {
+        'house_prices_prepared.csv': 1.0,
+        'vw_prepared.csv': 0.9825811559778306,
+        'imdb_prepared.csv': 0.8134178905206942
+    }
+}
+
+
+def weighted_average_quality(quality_measure, dataset_name, metadata_file='metadata.json'):
+    """
+    Calculation of the weighted average quality by number of categorical and numerical columns
+
+    :param quality_measure: Quality measure name
+    :param dataset_name: Dataset name
+    :param metadata_file: Name of the metadata file + path
+    """
+    with open(metadata_file, 'r') as f:
+        meta = json.load(f)
+
+    ds_meta = meta[dataset_name]
+
+    n_num_cols = len(ds_meta['numerical_cols'])
+    n_cat_cols = len(ds_meta['categorical_cols'])
+    n_cols = n_num_cols + n_cat_cols
+
+    weighted_measure = n_cat_cols / n_cols * (0 if quality_measure[0] is None else quality_measure[0]) \
+                       + n_num_cols / n_cols * \
+                       (0 if quality_measure[1] is None else quality_measure[1])
+
+    return round(weighted_measure, 4)
+
+
+def get_result_dataframe(algo_results, n_seeds):
+    """
+    Aggregation of results for one algorithm into a dataframe
+    """
+
+    res_df = pd.DataFrame(columns=[
+        'quality',
+        'per_seed_config_idx',
+        '$R^2$',
+    ])
+    per_seed_configs = len(algo_results) // n_seeds
+
+    for i, res in enumerate(algo_results):
+        if "ConsistentRepresentation" in res['polluter']:
+            polluter_config = res['polluter_config']
+            # During result preprocessing, an instance of the baseline config was added
+            # for each random seed with a numeric index-like value contained in the
+            # pollution config string so that those strings were distinguishable as keys.
+            if "{}" in polluter_config:
+                polluter_config = '_'.join(polluter_config.split('_')[:-1])
+            polluter_config = ast.literal_eval(polluter_config)
+            if 'percentage_polluted_rows' not in res_df:
+                res_df['percentage_polluted_rows'] = None
+            res_df = pd.concat(
+                [res_df, pd.DataFrame({'quality': res['quality'], 'per_seed_config_idx': i % per_seed_configs,
+                                       '$R^2$': res['r2_score'],
+                                       'percentage_polluted_rows': polluter_config['percentage_polluted_rows']},
+                                      index=[0])], ignore_index=True)
+        else:
+            res_df = pd.concat(
+                [res_df, pd.DataFrame({'quality': res['quality'], 'per_seed_config_idx': i % per_seed_configs,
+                                       '$R^2$': res['r2_score']}, index=[0])], ignore_index=True)
+
+    if "ConsistentRepresentation" in algo_results[0]['polluter']:
+        res_df['percentage_polluted_rows'] = res_df['percentage_polluted_rows'].astype(
+            float)
+        res_df = res_df.groupby('per_seed_config_idx').agg(np.mean)
+        res_df = res_df.sort_values(
+            by='percentage_polluted_rows', ascending=True)
+    else:
+        res_df = res_df.groupby("per_seed_config_idx").agg(np.mean)
+        res_df = res_df.sort_values(by='quality', ascending=False)
+    return res_df
+
+
+def plot_result_dataframe(algorithm_to_metrics, dataset_name, polluter_name, scenario_name, plots_dir, polluters_seen,
+                          baseline_perf):
+    """
+    Plotting a given dataframe and exporting the file as png
+    """
+    markers = ['o', 'v', '^', 's', 'P', 'D']
+
+    metric_figures = dict()
+    y_max = dict()
+    y_min = dict()
+    algo_name = None
+    polluter_title = polluter_name.split("Polluter")[0]
+    if "ConsistentRepresentation" in polluter_title or "Uniqueness" in polluter_title:
+        polluter_title = f"{polluter_title}_{polluters_seen}"
+
+    for i, (algo, res_df) in enumerate(algorithm_to_metrics.items()):
+        algo_name = algo
+        for c in res_df.columns.difference(['quality', 'percentage_polluted_rows']):
+            if metric_figures.get(c) is None:
+                fig, ax = plt.subplots(figsize=(15, 10))
+                point_texts = []
+                metric_figures[c] = (fig, ax, point_texts)
+                y_max[c] = res_df[c].max() + 0.1 * res_df[c].max()
+                y_min[c] = res_df[c].min() - 0.1
+                # We only plot the polluter name without a possible specific configuration parameter
+                ax.set_xlabel(
+                    f'{polluter_title.split("_")[0]} Quality')
+                ax.set_ylabel(f'Average {c}')
+                if isinstance(res_df.index[0], str):
+                    ax.set_xticks(range(len(res_df)))
+                    ax.set_xticklabels(
+                        res_df['quality'].to_list(), rotation=90)
+                else:
+                    ax.set_xlim((1.1, -0.1))
+                    ax.set_xticks(np.arange(1.0, -0.1, -0.2))
+            else:
+                fig, ax, point_texts = metric_figures[c]
+                y_max[c] = max(y_max[c], res_df[c].max() + 0.1)
+                y_min[c] = min(y_min[c], res_df[c].min() - 0.1)
+
+            baseline_res_df = list(baseline_perf.values())[i]
+            p = ax.plot(res_df['quality'].to_list(),
+                        res_df[c], marker=markers[i], label=" ".join(algo.split("_")[:-1]))
+
+            # plot the original dataset performance as dashed line for class balance and uniqueness
+            if "ClassBalance" in polluter_title or "Uniqueness" in polluter_title:
+                ax.plot(baseline_res_df['quality'].to_list(),
+                        baseline_res_df[c], linestyle="dashed", color=p[0].get_color(), alpha=0.8, ms=17)
+
+            # plot some pollution percentages for Consistent Representation, only for the Random Forest line because
+            # this line is mostly at the top
+            if "ConsistentRepresentation" in polluter_title and "Random_Forest" in algo_name:
+                res_df_percentage_points = res_df[res_df['percentage_polluted_rows'].isin([
+                    0, 0.5, 0.8, 1])]
+                for x, y, txt in zip(res_df_percentage_points['quality'], res_df_percentage_points[c],
+                                     res_df_percentage_points['percentage_polluted_rows']):
+                    if 0 <= y <= 1:
+                        point_texts.append(
+                            plt.text(x, y, txt, fontsize=FONT_SIZE_TICKS))
+
+    for c, (fig, ax, point_texts) in metric_figures.items():
+        ax.set_ylim(-0.1, 1)
+        ax.set_yticks(np.arange(1.0, -0.1, -0.2))
+        fig.tight_layout()
+        ax.vlines(
+            DATASET_BASE_QUALITY[polluter_title.split("_")[0]][dataset_name],
+            -0.1,
+            1,
+            color='black',
+            linestyles='dotted',
+            label='Original Dataset Quality'
+        )
+
+        # special handling for consistent representation plots
+        if "ConsistentRepresentation" in polluter_title:
+            adjust_text(point_texts, only_move={
+                'points': 'y', 'texts': 'y', 'objects': 'y'}, autoalign='y')
+        # fig.legend(loc=(0.295, 0.125), fontsize=54,
+        #          ncol=1, markerscale=2)
+
+        # save plot as file
+        figpath = Path(
+            plots_dir / f'{polluter_title}/{dataset_name.split(".")[0]}/{scenario_name}/{algo_name}/{polluter_title}_{dataset_name.split(".")[0]}_{scenario_name}.png')
+        figpath.parent.mkdir(parents=True, exist_ok=True)
+        fig.savefig(figpath)
+        plt.close(fig)
+
+
+def get_header(l):
+    """ Helper function generating a LaTeX table header for a list of data qualities. Implemented for technical report.
+    """
+    header = '    Quality'
+    ctr = 1
+    for qual in l:
+        header += " & \\multicolumn{1}{r" + \
+                  ('' if ctr == len(l) else '|') + "}{" + f'{qual:.2f}' + "}"
+        ctr += 1
+
+    header += '\\\\\n    \\hline\n'
+
+    return header
+
+
+def get_row(algo, l):
+    """ Helper function generating a LaTeX table row for an algorithm and a list of floats (clustering metrics per data
+    quality). Implemented for technical report.
+    """
+    row = f'    {" ".join(algo.split("_")[:-1])}'
+    for val in l:
+        row += f' & {val:.4f}'
+    row += '\\\\\n'
+    return row
+
+
+def get_table(df_dict, dataset, polluter, scenario):
+    """ Helper function generating a LaTeX table for a given dictionary algorithm -> results dataframe.
+    Implemented for technical report.
+    """
+    table = '\\begin{table*}[b]\n'
+    table += '    \\caption{Performance of regression algorithms for' + \
+             f' {polluter.split("Polluter")[0]} ' + 'dimension and ' + \
+             f'{dataset.split(".")[0].capitalize()}' + \
+             ' dataset in scenario ' + f'{scenario}' + '.}\n'
+    table += '    \\begin{tabular}{l|r|r|r|r|r|r|r|r|r|r|r}\n    & \\multicolumn{11}{c}{$R^2$} \\\\ \n'
+
+    has_head = False
+    for algo, df in df_dict.items():
+        if not has_head:
+            table += get_header(df['quality'].to_list())
+            has_head = True
+        table += get_row(algo, df['$R^2$'])
+
+    table += '    \\end{tabular}\n\\end{table*}'
+    return table
+
+
+def generate_plots(args):
+    """
+    Plot generation function
+
+    :param args: CLI args
+    """
+    with open(args.results, 'r') as f:
+        results = json.load(f)
+    results = results[next(iter(results))]
+    if args.ds_to_consider is not None:
+        results = {args.ds_to_consider: results[args.ds_to_consider]}
+
+    # travers through results json file and reading algorithms, datasets, and scenarios
+    algorithms = set()
+    for dataset, ds_res in results.items():
+        polluters_seen = 0
+        for polluter, pollution_res in tqdm(ds_res.items()):
+            scenarios = set()
+            metrics = dict()
+            for run_config, run_res in pollution_res.items():
+                quality_point = run_res['quality']
+                if isinstance(quality_point, list):
+                    quality_point = round(weighted_average_quality(
+                        quality_point, dataset), 4) if polluter == 'FeatureAccuracyPolluter' else round(
+                        quality_point[1], 4)
+                else:
+                    quality_point = round(quality_point, 4)
+
+                for scenario, scenario_res in run_res.items():
+                    if scenario == 'quality':
+                        continue
+                    scenarios.add(scenario)
+                    for algo, algo_res in scenario_res.items():
+                        algorithms.add(algo)
+                        if metrics.get(scenario) is None:
+                            metrics[scenario] = dict()
+                        if metrics[scenario].get(algo) is None:
+                            metrics[scenario][algo] = list()
+                        metrics[scenario][algo].append(
+                            {'quality': quality_point, 'polluter': polluter, 'polluter_config': run_config, **algo_res})
+            # generate plot for each scenario
+            for scenario in scenarios:
+                alg_to_metrics = dict()
+                baseline_perf = dict()
+                for algo in algorithms:
+                    if not args.combine_plots:
+                        alg_to_metrics = dict()
+                        baseline_perf = dict()
+                    alg_to_metrics[algo] = get_result_dataframe(
+                        metrics[scenario][algo], args.n_seeds)
+                    baseline_perf[algo] = get_result_dataframe(
+                        metrics["train_original_test_original"][algo], args.n_seeds)
+                    if not args.combine_plots:
+                        plot_result_dataframe(
+                            alg_to_metrics, dataset, polluter, scenario, args.plots_dir, polluters_seen, baseline_perf)
+                if args.combine_plots:
+                    alg_to_metrics = dict(sorted(alg_to_metrics.items()))
+                    plot_result_dataframe(
+                        alg_to_metrics, dataset, polluter, scenario, args.plots_dir, polluters_seen, baseline_perf)
+                    # comment in line below to print a LaTeX-formatted table of the original values
+                    # print(get_table(alg_to_metrics, dataset, polluter, scenario))
+
+            polluters_seen += 1
+
+
+if __name__ == '__main__':
+    """
+    Start script to add described CLI parameters for plot generation
+    """
+
+    parser = argparse.ArgumentParser(
+        'Script reading a results.json and plotting the metrics recorded.')
+
+    parser.add_argument('--results', required=True, type=Path,
+                        help='Path to the results.json to plot from.')
+    parser.add_argument('--ds-to-consider', required=False,
+                        type=str, help='Which dataset to consider for plotting.')
+    parser.add_argument('--plots-dir', required=True, type=Path,
+                        help='Base directory for the plot file structure.')
+    parser.add_argument('--n-seeds', required=True, type=int,
+                        help='Number of different random seeds that were used to create the results.')
+    parser.add_argument('--combine-plots', action='store_true',
+                        help='Set flag with --combine-plots for combining all algorithms in one plot.')
+
+    generate_plots(parser.parse_args())
