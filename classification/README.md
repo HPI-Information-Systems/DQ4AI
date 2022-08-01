@@ -1,4 +1,4 @@
-# Data Quality Analysis of Clustering Algorithms
+# Data Quality Analysis of Classification Algorithms
 
 This directory contains all scripts and results to make the classification experiments reproducable. We use these three datasets:
 - [Creditworthiness](http://www1.beuth-hochschule.de/FB_II/reports/Report-2019-004.pdf), referenced as SouthGermanCredit.csv
