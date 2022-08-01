@@ -2,7 +2,7 @@
 
 The code in this repository is the code used in our experimental study to explore the correlation between data quality and ML-models performance. We oprn source it to support the repetability of our analysis.
 
-Ypu can find all the results in our technical report from [here](https://arxiv.org/abs/2207.14529). A version of this report is submited and under review. 
+You can find all the results in our technical report from [here](https://arxiv.org/abs/2207.14529). A version of this report is submited and under review. 
 
 ## Abstract
 Modern artificial intelligence (AI) applications require large quantities of training and test data. This need creates critical challenges not only concerning the availability of such data, but also regarding its quality. For example, incomplete, erroneous or inappropriate training data can lead to unreliable models that produce ultimately poor decisions. 
@@ -29,6 +29,8 @@ In each of these three directories, there are two files:
 In the polluters directory, there are:
 - `interfaces.py`:  It contains a class that defines an abstract base class of a polluter. 
 - `util.py`: All helper functions go here.
+
+**IMPORTANT** A detealed documentation can be found in each of the tasks directories. 
 
 ## Contact
 For quesctions, please contact hazar.harmouch@hpi.de
