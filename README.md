@@ -1,8 +1,8 @@
 # The Effects of Data Quality on Machine Learning Performance
 
-The code in this repository is the code used in our experimental study to explore the correlation between data quality and ML-models performance. We oprn source it to support the repetability of our analysis.
+The code in this repository is the code used in our experimental study to explore the correlation between data quality and ML-models performance. We open source it to support the repeatability of our analysis.
 
-You can find all the results in our technical report from [here](https://arxiv.org/abs/2207.14529). A version of this report is submited and under review. 
+You can find all the results in our technical report from [here](https://arxiv.org/abs/2207.14529). A version of this report is submitted as a paper and under review. 
 
 ## Abstract
 Modern artificial intelligence (AI) applications require large quantities of training and test data. This need creates critical challenges not only concerning the availability of such data, but also regarding its quality. For example, incomplete, erroneous or inappropriate training data can lead to unreliable models that produce ultimately poor decisions. 
@@ -32,7 +32,7 @@ In the polluters directory, there are:
 
 **IMPORTANT** A detailed documentation can be found in each of the tasks directories. 
 
-## Contributers
+## Contributors
 - Lukas Budach
 - Moritz Feuerpfeil
 - Nina Ihde
@@ -43,4 +43,4 @@ In the polluters directory, there are:
 - Felix Naumann
 
 ## Contact
-For quesctions, please contact hazar.harmouch@hpi.de
+For questions, please contact hazar.harmouch@hpi.de
