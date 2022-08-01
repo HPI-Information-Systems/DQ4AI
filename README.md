@@ -33,14 +33,14 @@ In the polluters directory, there are:
 **IMPORTANT** A detailed documentation can be found in each of the tasks directories. 
 
 ## Contributers
--Lukas Budach
--Moritz Feuerpfeil
--Nina Ihde
--Andrea Nathansen
--Nele Sina Noack
--Hendrik Patzlaff
--Hazar Harmouch 
--Felix Naumann
+- Lukas Budach
+- Moritz Feuerpfeil
+- Nina Ihde
+- Andrea Nathansen
+- Nele Sina Noack
+- Hendrik Patzlaff
+- Hazar Harmouch 
+- Felix Naumann
 
 ## Contact
 For quesctions, please contact hazar.harmouch@hpi.de
