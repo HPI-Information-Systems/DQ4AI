@@ -30,3 +30,5 @@ In the polluters directory, there are:
 - `interfaces.py`:  It contains a class that defines an abstract base class of a polluter. 
 - `util.py`: All helper functions go here.
 
+## Contact
+For quesctions, please contact hazar.harmouch@hpi.de
