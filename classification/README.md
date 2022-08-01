@@ -1,7 +1,7 @@
 # Classification README
 
 ## Running the experiments
-In a console from the dataquality_4ai directory, run:
+In a console from the top directory, run:
 ```bash
 python -m classification.classification
 ```
