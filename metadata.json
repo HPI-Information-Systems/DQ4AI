@@ -95,7 +95,7 @@
             "categorical": "unknown",
             "numerical": -1
         },
-        "n_samples": 7500,
+        "n_samples": 39439,
         "numerical_cols": [
             "age"
         ],
@@ -184,7 +184,7 @@
                 "F09": -1
             }
         },
-        "n_samples": 7504,
+        "n_samples": 581012,
         "numerical_cols": [
             "F00",
             "F01",
@@ -371,7 +371,7 @@
             "categorical": null,
             "numerical": -1
         },
-        "n_samples": 7514,
+        "n_samples": 20000,
         "numerical_cols": [
             "high",
             "onpix",

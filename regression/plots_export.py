@@ -3,6 +3,7 @@ import json
 import ast
 import numpy as np
 import matplotlib
+matplotlib.use('Agg')  # Set the backend to a non-GUI backend
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -21,6 +22,50 @@ plt.rcParams["xtick.labelsize"] = FONT_SIZE_TICKS
 plt.rcParams["ytick.labelsize"] = FONT_SIZE_TICKS
 matplotlib.rcParams.update({'font.size': FONT_SIZE})
 plt.rcParams['lines.linewidth'] = 4
+
+LABELS = {
+    'Decision_Tree_Regression': 'DT',
+    'Linear_Regression': 'LR',
+    'MLP_Regression': 'MLP-1',
+    'Ridge_Regression': 'RR',
+    'Random_Forest_Regression': 'RF',
+    'MLP_Regression_5_hidden_layers': 'MLP-5',
+    'MLP_Regression_10_hidden_layers': 'MLP-10',
+    'GradientBoosting_Regression': 'GB'
+}
+
+ALGORITHM_ORDER = [
+    'DT',
+    'RF',
+    'LR',
+    'RR',
+    'GB',
+    'MLP-1',
+    'MLP-5',
+    'MLP-10',
+    'Original DQ'
+]
+
+COLORS = {
+    'Decision_Tree_Regression': '#1f77b4',
+    'Linear_Regression': '#2ca02c',
+    'MLP_Regression': '#d62728',
+    'Ridge_Regression': '#7f7f7f',
+    'Random_Forest_Regression': '#e377c2',
+    'MLP_Regression_5_hidden_layers': '#8c564b',
+    'MLP_Regression_10_hidden_layers': '#9467bd',
+    'GradientBoosting_Regression': '#ff7f0e'
+}
+
+READABLE_POLLUTERS = {'ConsistentRepresentationPolluter': 'Consistent Representation',
+                      'ConsistentRepresentation_5': 'Consistent Representation',
+                      'ConsistentRepresentation_4': 'Consistent Representation',
+                      'Completeness': 'Completeness',
+                      'TargetAccuracy': 'Target Accuracy',
+                      'FeatureAccuracy': 'Feature Accuracy',
+                      'Uniqueness_6': 'Uniqueness',
+                      'Uniqueness_7': 'Uniqueness',
+                      'ClassBalance': 'Class Balance'}
 
 # algorithm baseline quality to add
 DATASET_BASE_QUALITY = {
@@ -65,7 +110,7 @@ def weighted_average_quality(quality_measure, dataset_name, metadata_file='metad
     :param dataset_name: Dataset name
     :param metadata_file: Name of the metadata file + path
     """
-    with open(metadata_file, 'r') as f:
+    with open('../metadata.json', 'r') as f:
         meta = json.load(f)
 
     ds_meta = meta[dataset_name]
@@ -131,8 +176,7 @@ def plot_result_dataframe(algorithm_to_metrics, dataset_name, polluter_name, sce
     """
     Plotting a given dataframe and exporting the file as png
     """
-    markers = ['o', 'v', '^', 's', 'P', 'D']
-
+    markers = ['o', 'v', '^', 's', 'P', 'D', '8', 'X', 'p']
     metric_figures = dict()
     y_max = dict()
     y_min = dict()
@@ -151,9 +195,9 @@ def plot_result_dataframe(algorithm_to_metrics, dataset_name, polluter_name, sce
                 y_max[c] = res_df[c].max() + 0.1 * res_df[c].max()
                 y_min[c] = res_df[c].min() - 0.1
                 # We only plot the polluter name without a possible specific configuration parameter
-                ax.set_xlabel(
-                    f'{polluter_title.split("_")[0]} Quality')
-                ax.set_ylabel(f'Average {c}')
+                x_label = READABLE_POLLUTERS[polluter_title] if polluter_title in READABLE_POLLUTERS else polluter_title
+                ax.set_xlabel(x_label + ' Quality')
+                ax.set_ylabel(f'{c}')
                 if isinstance(res_df.index[0], str):
                     ax.set_xticks(range(len(res_df)))
                     ax.set_xticklabels(
@@ -166,14 +210,14 @@ def plot_result_dataframe(algorithm_to_metrics, dataset_name, polluter_name, sce
                 y_max[c] = max(y_max[c], res_df[c].max() + 0.1)
                 y_min[c] = min(y_min[c], res_df[c].min() - 0.1)
 
-            baseline_res_df = list(baseline_perf.values())[i]
+            baseline_res_df = baseline_perf[algo_name]
             p = ax.plot(res_df['quality'].to_list(),
-                        res_df[c], marker=markers[i], label=" ".join(algo.split("_")[:-1]))
+                        res_df[c], marker=markers[i], label=LABELS[algo_name], markersize=15)
 
             # plot the original dataset performance as dashed line for class balance and uniqueness
             if "ClassBalance" in polluter_title or "Uniqueness" in polluter_title:
-                ax.plot(baseline_res_df['quality'].to_list(),
-                        baseline_res_df[c], linestyle="dashed", color=p[0].get_color(), alpha=0.8, ms=17)
+                ax.plot(baseline_res_df['quality'].copy(),
+                        baseline_res_df[c].copy(), linestyle="dashed", color=COLORS[algo_name], alpha=0.8, ms=17)
 
             # plot some pollution percentages for Consistent Representation, only for the Random Forest line because
             # this line is mostly at the top
@@ -196,19 +240,29 @@ def plot_result_dataframe(algorithm_to_metrics, dataset_name, polluter_name, sce
             1,
             color='black',
             linestyles='dotted',
-            label='Original Dataset Quality'
+            label='Original DQ'
         )
 
         # special handling for consistent representation plots
         if "ConsistentRepresentation" in polluter_title:
             adjust_text(point_texts, only_move={
-                'points': 'y', 'texts': 'y', 'objects': 'y'}, autoalign='y')
-        # fig.legend(loc=(0.295, 0.125), fontsize=54,
-        #          ncol=1, markerscale=2)
+                'points': 'y', 'text': 'y', 'objects': 'y', 'explode': 'y', 'static': 'y', 'pull': 'y'}, autoalign='y')
 
+        # Change plotting order
+        handles, labels = ax.get_legend_handles_labels()
+        order_index = {algo: i for i, algo in enumerate(ALGORITHM_ORDER)}
+        sorted_handles_labels = sorted(zip(handles, labels), key=lambda hl: order_index[hl[1]])
+        sorted_handles, sorted_labels = zip(*sorted_handles_labels)
         # save plot as file
         figpath = Path(
-            plots_dir / f'{polluter_title}/{dataset_name.split(".")[0]}/{scenario_name}/{algo_name}/{polluter_title}_{dataset_name.split(".")[0]}_{scenario_name}.png')
+            plots_dir / f'{polluter_title}/{polluter_title}_{dataset_name.split(".")[0]}_{scenario_name}.png')
+        figpath.parent.mkdir(parents=True, exist_ok=True)
+        fig.savefig(figpath)
+
+        fig.legend(sorted_handles, sorted_labels, loc=(0.18, 0.217), fontsize=45, ncol=3, markerscale=1.5)
+        figpath = Path(
+            plots_dir / f'{polluter_title}/{polluter_title}_{dataset_name.split(".")[0]}_{scenario_name}_legend.png')
+
         figpath.parent.mkdir(parents=True, exist_ok=True)
         fig.savefig(figpath)
         plt.close(fig)

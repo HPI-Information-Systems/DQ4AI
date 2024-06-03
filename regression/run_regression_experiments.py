@@ -9,15 +9,14 @@ from sklearn.model_selection import train_test_split
 
 from datetime import datetime
 from pathlib import Path
-
 from polluters import Polluter, CompletenessPolluter, UniquenessPolluter, ClassBalancePolluter, FeatureAccuracyPolluter, \
     TargetAccuracyPolluter, ConsistentRepresentationPolluter
-from .util import discretize_column
+from regression.utils import discretize_column
 from dataset_manager import DatasetManager
 from util import start_logging
 
-from .experiments import LinearRegressionExperiment, RidgeRegressionExperiment, DecisionTreeRegressionExperiment, \
-    RandomForestRegressionExperiment, MLPRegressionExperiment
+from regression.experiments import LinearRegressionExperiment, RidgeRegressionExperiment, DecisionTreeRegressionExperiment, \
+    RandomForestRegressionExperiment, MLPRegressionExperiment, MLPRegression5Experiment, MLPRegression10Experiment, GradientBoostingRegressionExperiment
 
 """
 This module is intended as an aggregator for the experiments defined in the regression package
@@ -35,8 +34,9 @@ REGRESSION_DATASETS = ["house_prices_prepared.csv",
 POLLUTION_METHODS = [CompletenessPolluter, TargetAccuracyPolluter, ClassBalancePolluter, FeatureAccuracyPolluter,
                      UniquenessPolluter, ConsistentRepresentationPolluter]
 # list of experiment classes
-EXPERIMENTS = [LinearRegressionExperiment, RidgeRegressionExperiment, DecisionTreeRegressionExperiment,
-               RandomForestRegressionExperiment, MLPRegressionExperiment]
+# EXPERIMENTS = [LinearRegressionExperiment, RidgeRegressionExperiment, DecisionTreeRegressionExperiment,
+#                RandomForestRegressionExperiment, MLPRegressionExperiment]
+EXPERIMENTS = [MLPRegression5Experiment, MLPRegression10Experiment, GradientBoostingRegressionExperiment]
 
 
 def init_results_file(run_timestamp, ds_name, polluter_name, polluter_params, quality):
@@ -80,7 +80,7 @@ def run_regression_experiments():
         POLLUTED_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
     # read dataset metadata file
-    with open('metadata.json', 'r') as f:
+    with open('../metadata.json', 'r') as f:
         metadata = json.load(f)
 
     # iterate through your datasets to read, pollute and evaluate them

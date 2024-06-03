@@ -17,7 +17,7 @@ def get_baselines():
     datasets = ['TelcoCustomerChurn.csv', 'SouthGermanCredit.csv', 'cmc.data']
     baselines = {dataset: {'accuracy': {}, 'f1-score': {}} for dataset in datasets}
     for dataset in datasets:
-        df = read_csv(f"../data/clean/{dataset}", sep=',')
+        df = read_csv(f"../classification/data/clean/{dataset}", sep=',')
         accuracy, f1_score = get_majority_baseline_performance(df[metadata[dataset]['target']].values)
         baselines[dataset]['accuracy']['baseline_majority'] = accuracy
         baselines[dataset]['f1-score']['baseline_majority'] = f1_score

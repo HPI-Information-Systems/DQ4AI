@@ -13,6 +13,7 @@ import pandas as pd
 import random
 
 from kmodes.kprototypes import KPrototypes
+from kmodes.kmodes import KModes
 
 from sklearn.cluster import AgglomerativeClustering, KMeans, OPTICS
 from sklearn.metrics import rand_score, mutual_info_score, adjusted_rand_score, adjusted_mutual_info_score, \
@@ -71,26 +72,39 @@ class ClusteringExperiment(ClusteringBaseExperiment):
         # split into samples and labels
         X, y = self.test[[c for c in self.test.columns if c != self._target_col]], self.test[self._target_col]
 
-        if self._use_gower:
-            dist_mat = gower_matrix(X.to_numpy(dtype=float), cat_features=[c in self._cat_feats for c in X.columns])
-            y_pred = self.model.fit_predict(dist_mat)
-        elif self.name == 'k-Prototypes':
-            y_pred = self.model.fit_predict(X, categorical=[X.columns.get_loc(c) for c in self._cat_feats])
-        else:
-            y_pred = self.model.fit_predict(X)
-
-        scores = {
-            'rand': {
-                'rand score': rand_score(y, y_pred),
-                'adjusted rand score': adjusted_rand_score(y, y_pred)
-            },
-            'mutual information': {
-                'mutual information score': mutual_info_score(y, y_pred),
-                'adj_mut_info': adjusted_mutual_info_score(y, y_pred),
-                'norm_mut_info': normalized_mutual_info_score(y, y_pred),
-            },
-            'n_cluster': len(np.unique(y_pred))
-        }
+        try:
+            if self._use_gower:
+                dist_mat = gower_matrix(X.to_numpy(dtype=float), cat_features=[c in self._cat_feats for c in X.columns])
+                y_pred = self.model.fit_predict(dist_mat)
+            elif self.name == 'k-Prototypes':
+                y_pred = self.model.fit_predict(X, categorical=[X.columns.get_loc(c) for c in self._cat_feats])
+            else:
+                y_pred = self.model.fit_predict(X)
+            scores = {
+                'rand': {
+                    'rand score': rand_score(y, y_pred),
+                    'adjusted rand score': adjusted_rand_score(y, y_pred)
+                },
+                'mutual information': {
+                    'mutual information score': mutual_info_score(y, y_pred),
+                    'adj_mut_info': adjusted_mutual_info_score(y, y_pred),
+                    'norm_mut_info': normalized_mutual_info_score(y, y_pred),
+                },
+                'n_cluster': len(np.unique(y_pred))
+            }
+        except ValueError:
+            scores = {
+                'rand': {
+                    'rand score': -1.0,
+                    'adjusted rand score': -1.0
+                },
+                'mutual information': {
+                    'mutual information score': -1.0,
+                    'adj_mut_info': -1.0,
+                    'norm_mut_info': -1.0,
+                },
+                'n_cluster': -1.0
+            }
 
         return scores
 
@@ -339,7 +353,8 @@ class AutoencoderExperiment(ClusteringBaseExperiment):
         self.model.eval()
         with torch.no_grad():
             testdataiter = iter(testloader)
-            inputs, labels = testdataiter.next()
+            #inputs, labels = testdataiter.next()
+            inputs, labels = next(testdataiter)
             inputs = inputs.to(self.device)
             _, outputs = self.model(inputs.float())
             logging.info(f'RMSE Training: {np.sqrt(loss_per_batch[-1])}, '

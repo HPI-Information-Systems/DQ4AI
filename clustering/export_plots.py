@@ -153,7 +153,7 @@ def weighted_average_quality(quality_measure, dataset_name, metadata_file='metad
     categorical and numerical columns. It is assumed that the <quality_measure> tuple corresponds to
     (measure_cat_cols, measure_num_cols).
     """
-    with open(metadata_file, 'r') as f:
+    with open('../metadata.json', 'r') as f:
         meta = json.load(f)
 
     ds_meta = meta[dataset_name]
@@ -293,14 +293,34 @@ def plot_result_dataframe(algorithm_to_metrics, dataset_name, polluter_name, plo
             y_max[c],
             color='black',
             linestyles='dotted',
-            label='Original Dataset Quality'
+            label='Original DQ'
         )
         fig.tight_layout()
-        # fig.legend(loc='upper right', borderaxespad=1, fontsize=21, ncol=2)
 
         figpath = Path(plots_dir / f'{dataset_name.split(".")[0]}/{polluter_name.split("Polluter")[0]}/{c}.png')
         figpath.parent.mkdir(parents=True, exist_ok=True)
         fig.savefig(figpath, dpi=300)
+
+        figpath = Path(plots_dir / f'{dataset_name.split(".")[0]}/{polluter_name.split("Polluter")[0]}/{c}_legend.png')
+        fig.legend(loc='upper right', borderaxespad=1, fontsize=21, ncol=3)
+        figpath.parent.mkdir(parents=True, exist_ok=True)
+        fig.savefig(figpath, dpi=300)
+
+        ax.set_ylim((0, 0.12))
+        ax.vlines(
+            DATASET_BASE_QUALITY[polluter_name][dataset_name],
+            0,
+            y_max[c],
+            color='black',
+            linestyles='dotted',
+            label='Original DQ'
+        )
+        fig.tight_layout()
+
+        figpath = Path(plots_dir / f'{dataset_name.split(".")[0]}/{polluter_name.split("Polluter")[0]}/{c}_focused.png')
+        figpath.parent.mkdir(parents=True, exist_ok=True)
+        fig.savefig(figpath, dpi=300)
+
         plt.close(fig)
 
 
@@ -418,6 +438,11 @@ def main(args):
                 **alg_to_metrics_tmp,
                 'OPTICS': alg_to_metrics['OPTICS'],
             }
+            for algo in alg_to_metrics.keys():
+                print(f'Plotting {dataset} {polluter} {algo}...')
+                current_df = alg_to_metrics[algo]
+                alg_to_metrics[algo] = current_df.groupby(['pollution_level', 'quality']).mean().reset_index().copy()
+
             plot_result_dataframe(alg_to_metrics, dataset, polluter, args.plots_dir)
             # comment in line below to print a LaTeX-formatted table of the original values
             # print(get_table(alg_to_metrics, dataset, polluter))

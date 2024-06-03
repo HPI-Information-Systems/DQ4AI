@@ -24,8 +24,14 @@ def main(args):
                         if scenario_name == 'quality':
                             continue
                         for algorithm_name, algorithm_res in scenario_res.items():
-                            target[target_timestamp][dataset][polluter][run_config][scenario_name][
-                                algorithm_name] = algorithm_res
+                            try:
+                                if algorithm_name in target[target_timestamp][dataset][polluter][run_config][scenario_name]:
+                                    target[target_timestamp][dataset][polluter][run_config][scenario_name][
+                                        algorithm_name] = algorithm_res
+                                else:
+                                    target[target_timestamp][dataset][polluter][run_config][scenario_name][algorithm_name] = algorithm_res
+                            except KeyError:
+                                continue
     # write target file
     with open(args.target, 'w') as f:
         json.dump(target, f,

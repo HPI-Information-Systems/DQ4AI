@@ -14,6 +14,7 @@ def main(args):
         all_results = json.load(f)
     new_results_name = "preprocessed_" + str(args.results)
 
+    del all_results['2024_01_23_17_55_17']
     for timestamp, results in all_results.items():
         for dataset, ds_res in results.items():
             polluter_configs_results = {}

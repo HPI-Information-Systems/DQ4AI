@@ -31,7 +31,7 @@ def start_logging(log_file_path=DATA_DIR / f'logs/experiment_{datetime.now():%Y_
     """
     Configures and starts logging for the project using the logging library.
 
-    :param log_file_path: path to log file
+    param log_file_path: path to log file
     :type log_file_path: pathlib.Path
     :param log_level: logging library's level of detail for log prints
     :type log_level: int (from logging log level enum)
@@ -106,7 +106,8 @@ def main():
         OPTICSExperiment
     ]
     # list of dataset names
-    datasets = ['covtype.csv', 'letter.arff', 'bank.csv']
+    #datasets = ['covtype.csv', 'letter.arff', 'bank.csv']
+    datasets = ['covtype.csv']
     # run start time (for results json key)
     start_timestamp = f'{datetime.now():%Y_%m_%d_%H_%M_%S}'
 
@@ -114,38 +115,13 @@ def main():
         POLLUTED_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
     # read dataset metadata file
-    with open('metadata.json', 'r') as f:
+    with open('../metadata.json', 'r') as f:
         metadata = json.load(f)
-
-    tmp_datasets = []
-    for d in datasets:
-        parts = d.split('.')
-        tmp_datasets.extend([f'{parts[0]}_{s}.{parts[1]}' for s in metadata['random_seeds']])
-    datasets = tmp_datasets
 
     logging.debug(datasets)
 
     # iterate through your datasets to read, pollute and evaluate them
     for ds_name in datasets:
-        # special handling for datasets pre-sampled with a given seed
-        # it is assumed that the datasets are named <ds_name>_<random_seed>.csv (e.g. covtype_12345.csv)
-        ds_sampled_with_seed = False
-        for rseed in metadata['random_seeds']:
-            ds_sampled_with_seed = rseed if str(rseed) in ds_name else False
-            if ds_sampled_with_seed:
-                break
-
-        # special handling for dataset pre-sampled with a given seed
-        # if we found that a random seed is in the dataset name
-        #   - deepcopy current metadata for later restoring
-        #   - modify the metadata to only run polluters with that random seed
-        if ds_sampled_with_seed:
-            old_metadata = deepcopy(metadata)
-            metadata['random_seeds'] = [ds_sampled_with_seed]
-            org_ds_name = ''.join(ds_name.split('_' + str(ds_sampled_with_seed)))
-            metadata[ds_name] = metadata[org_ds_name]
-            org_ds = pd.read_csv(CLEAN_DATA_DIR / org_ds_name)
-
         # check whether dataset is defined in metadata
         if ds_name not in metadata.keys():
             raise KeyError(f'Dataset {ds_name} is not specified in the metadata file.')
@@ -159,15 +135,7 @@ def main():
 
             for polluter in polluters:
                 logging.info(f'Polluting dataset {ds_name} with {polluter.__class__.__name__}')
-                if isinstance(polluter, ClassBalancePolluter) and ds_sampled_with_seed:
-                    polluted_df, quality = DatasetManager.read_or_pollute(
-                        POLLUTED_DATA_DIR,
-                        org_ds,
-                        org_ds_name,
-                        polluter
-                    )
-                else:
-                    polluted_df, quality = DatasetManager.read_or_pollute(POLLUTED_DATA_DIR, dataset, ds_name, polluter)
+                polluted_df, quality = DatasetManager.read_or_pollute(POLLUTED_DATA_DIR, dataset, ds_name, polluter)
                 DatasetManager.persist_dataset(POLLUTED_DATA_DIR, polluted_df, ds_name, polluter)
                 logging.info(f'Pollution finished, logging results...')
                 logging.info(f'Pollution parameters: {polluter.get_pollution_params()}')
@@ -203,11 +171,6 @@ def main():
 
             logging.info(f'Pollution for dataset {ds_name} and polluter {polluter_class.__name__} required: '
                          f'{time() - start_time}')
-
-        # special handling for dataset pre-sampled with a given seed
-        # reset metadata to original state
-        if ds_sampled_with_seed:
-            metadata = old_metadata
 
 
 if __name__ == "__main__":

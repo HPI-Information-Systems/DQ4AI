@@ -16,7 +16,20 @@ MARKERS = {
     'Logistic Regression Classification': 'v',
     'Multilayer Perceptron Classification': '^',
     'Support Vector Machine Classification': 's',
-    'k-Nearest Neighbors Classification': 'P'
+    'k-Nearest Neighbors Classification': 'P',
+    'Multilayer Perceptron Classification (5 hidden layers)': 'D',
+    'Multilayer Perceptron Classification (10 hidden layers)': 'X',
+    'Gradient Boosting Classification': 'p'
+}
+LABELS = {
+    'Decision Tree Classification': 'DT',
+    'Logistic Regression Classification': 'LogR',
+    'Multilayer Perceptron Classification': 'MLP-1',
+    'Support Vector Machine Classification': 'SVM',
+    'k-Nearest Neighbors Classification': 'KNN',
+    'Multilayer Perceptron Classification (5 hidden layers)': 'MLP-5',
+    'Multilayer Perceptron Classification (10 hidden layers)': 'MLP-10',
+    'Gradient Boosting Classification': 'GB'
 }
 
 POLLUTION_LABELS = ['0.0', '0.5', '0.8', '1.0']
@@ -46,12 +59,14 @@ def plot_ordinary_performances(ax, aggregated_plotting_df, performance_measure, 
                                                                                   capsize=4, alpha=0.6,
                                                                                   marker=marker,
                                                                                   markersize=MARKER_SIZE,
-                                                                                  linewidth=LINE_WIDTH)
+                                                                                  linewidth=LINE_WIDTH,
+                                                                                  label=LABELS[algo])
         else:
             aggregated_plotting_df[aggregated_plotting_df.algorithm == algo].plot(x='quality', y=performance_measure,
                                                                                   ax=ax, marker=marker,
                                                                                   markersize=MARKER_SIZE,
-                                                                                  linewidth=LINE_WIDTH)
+                                                                                  linewidth=LINE_WIDTH,
+                                                                                  label=LABELS[algo])
 
 
 def plot_consistent_representation_performances(ax, aggregated_plotting_df, dataset, performance_measure,
@@ -75,15 +90,14 @@ def plot_consistent_representation_performances(ax, aggregated_plotting_df, data
             highest_performance = performances_highest_qualities[dataset][algorithm][performance_measure]
 
             y.insert(0, highest_performance)
-
         # Plot results with or without error bar
         if with_std:
             std = 'accuracy_std' if 'accuracy' in performance_measure else 'f1-score_std'
             y_err = aggregated_plotting_df[aggregated_plotting_df.algorithm == algorithm][std].fillna(0)
             ax.plot(x, y, yerr=y_err, marker=marker, markersize=MARKER_SIZE, capsize=4, alpha=0.6,
-                    linewidth=LINE_WIDTH)
+                    linewidth=LINE_WIDTH, label=LABELS[algorithm])
         else:
-            ax.plot(x, y, marker=marker, markersize=MARKER_SIZE, linewidth=LINE_WIDTH)
+            ax.plot(x, y, marker=marker, markersize=MARKER_SIZE, linewidth=LINE_WIDTH, label=LABELS[algorithm])
 
         # Collect pollution levels of the data points
         for x, y, txt in zip(x, y, pollution_levels):
@@ -92,7 +106,7 @@ def plot_consistent_representation_performances(ax, aggregated_plotting_df, data
     return texts
 
 
-def plot_performances(df, dataset, polluter, scenario, baselines, with_std=False, use_f1=False, save_path=None):
+def plot_performances(df, dataset, polluter, scenario, baselines, with_std=False, use_f1=False, save_path=None, show_legend=False):
     """
     :param df:          DataFrame
     :param dataset:     string, name of the dataset
@@ -154,11 +168,11 @@ def plot_performances(df, dataset, polluter, scenario, baselines, with_std=False
         baseline_x = append(baseline_x, min_performance_on_smallest_quality)
         baseline_y_majority = [baseline_majority] * len(baseline_x)
         baseline_y_ratio = [baseline_ratio] * len(baseline_x)
-        plt.plot(baseline_x, baseline_y_majority, linestyle='--', color='black', linewidth=LINE_WIDTH)
-        plt.plot(baseline_x, baseline_y_ratio, linestyle='-.', color='black', linewidth=LINE_WIDTH)
+        plt.plot(baseline_x, baseline_y_majority, linestyle='--', color='black', linewidth=LINE_WIDTH, label='Majority class baseline')
+        plt.plot(baseline_x, baseline_y_ratio, linestyle='-.', color='black', linewidth=LINE_WIDTH, label='Class ratio baseline')
 
         # Plot some levels of pollution
-        adjust_text(texts, only_move={'points': 'y', 'texts': 'y', 'objects': 'y'},
+        adjust_text(texts, only_move={'text': 'y', 'static': 'y', 'explode': 'y', 'pull': 'y'},
                     autoalign='y')
 
     else:
@@ -166,10 +180,10 @@ def plot_performances(df, dataset, polluter, scenario, baselines, with_std=False
         plot_ordinary_performances(ax, aggregated_plotting_df, performance_measure, with_std)
         plt.plot(aggregated_plotting_df.quality.unique(),
                  [baseline_majority] * aggregated_plotting_df.quality.unique().shape[0], linestyle='--', color='black',
-                 linewidth=LINE_WIDTH)
+                 linewidth=LINE_WIDTH, label='Majority class baseline')
         plt.plot(aggregated_plotting_df.quality.unique(),
                  [baseline_ratio] * aggregated_plotting_df.quality.unique().shape[0], linestyle='-.', color='black',
-                 linewidth=LINE_WIDTH)
+                 linewidth=LINE_WIDTH, label='Class ratio baseline')
 
     ax.invert_xaxis()
     if use_f1:
@@ -181,17 +195,19 @@ def plot_performances(df, dataset, polluter, scenario, baselines, with_std=False
     plt.yticks(fontsize=TICK_FONT_SIZE)
     plt.grid(linewidth=LINE_WIDTH)
     ax.set_ylim([0.15, 0.85])
-    if ax.get_legend():
-        ax.get_legend().remove()
+
+    custom_order = ['Majority class baseline', 'Class ratio baseline', 'DT', 'LogR',
+                    'MLP-1', 'MLP-5', 'MLP-10',
+                    'GB', 'SVM', 'KNN']
+    handles, labels = ax.get_legend_handles_labels()
+    label_handle_dict = dict(zip(labels, handles))
+    ordered_handles = [label_handle_dict[label] for label in custom_order if label in label_handle_dict]
+    if show_legend:
+        ax.legend(ordered_handles, custom_order, fontsize=26, ncol=3)
+    else:
+        if ax.get_legend():
+            ax.get_legend().remove()
     if save_path:
-        if not path.exists('../figures'):
-            mkdir('../figures')
-        if not path.exists(f"../figures/{polluter}/"):
-            mkdir(f"../figures/{polluter}/")
-        if not path.exists(f"../figures/paper/"):
-            mkdir(f"../figures/paper/")
-        if not path.exists(f"../figures/paper/{polluter}/"):
-            mkdir(f"../figures/paper/{polluter}/")
         plt.savefig(save_path, dpi=300, bbox_inches='tight')
         plt.close()
     else:

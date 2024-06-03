@@ -3,6 +3,7 @@ from sklearn import datasets, linear_model, tree
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.neural_network import MLPRegressor
+from sklearn.ensemble import GradientBoostingRegressor
 from typing import List
 
 from experiment import Experiment
@@ -76,4 +77,25 @@ class MLPRegressionExperiment(RegressionExperiment):
     def __init__(self, train_df: pd.DataFrame, test_df: pd.DataFrame, target_col: str, categorical_columns: List[str]):
         model = MLPRegressor(random_state=12345, max_iter=3000)
         super().__init__('MLP_Regression', train_df,
+                         test_df, model, target_col, categorical_columns)
+
+
+class MLPRegression5Experiment(RegressionExperiment):
+    def __init__(self, train_df: pd.DataFrame, test_df: pd.DataFrame, target_col: str, categorical_columns: List[str]):
+        model = MLPRegressor(random_state=12345, max_iter=3000, hidden_layer_sizes=(100, 100, 100, 100, 100,))
+        super().__init__('MLP_Regression_5_hidden_layers', train_df,
+                         test_df, model, target_col, categorical_columns)
+
+
+class MLPRegression10Experiment(RegressionExperiment):
+    def __init__(self, train_df: pd.DataFrame, test_df: pd.DataFrame, target_col: str, categorical_columns: List[str]):
+        model = MLPRegressor(random_state=12345, max_iter=3000, hidden_layer_sizes=(100, 100, 100, 100, 100, 100, 100, 100, 100, 100,))
+        super().__init__('MLP_Regression_10_hidden_layers', train_df,
+                         test_df, model, target_col, categorical_columns)
+
+
+class GradientBoostingRegressionExperiment(RegressionExperiment):
+    def __init__(self, train_df: pd.DataFrame, test_df: pd.DataFrame, target_col: str, categorical_columns: List[str]):
+        model = GradientBoostingRegressor(random_state=12345)
+        super().__init__('GradientBoosting_Regression', train_df,
                          test_df, model, target_col, categorical_columns)

@@ -5,6 +5,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import classification_report
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neural_network import MLPClassifier
+from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.svm import SVC
 from experiment import Experiment
 from util import one_hot_encode
@@ -94,6 +95,32 @@ class MultilayerPerceptronExperiment(ClassificationExperiment):
         super().__init__('Multilayer Perceptron Classification', df_train, df_test, model, metadata['target'])
 
 
+class MultilayerPerceptron5Experiment(ClassificationExperiment):
+    """
+    This model needs the categorical columns from the metadata to one-hot-encode them.
+    Min-Max-Normalisation should be used for scaling the features, if wanted.
+    """
+    def __init__(self, df_train, df_test, metadata) -> None:
+        model = MLPClassifier(random_state=42, max_iter=1000, hidden_layer_sizes=(100, 100, 100, 100, 100,))
+
+        df_train, df_test = one_hot_encode(df_train, df_test, metadata['categorical_cols'])
+
+        super().__init__('Multilayer Perceptron Classification (5 hidden layers)', df_train, df_test, model, metadata['target'])
+
+
+class MultilayerPerceptron10Experiment(ClassificationExperiment):
+    """
+    This model needs the categorical columns from the metadata to one-hot-encode them.
+    Min-Max-Normalisation should be used for scaling the features, if wanted.
+    """
+    def __init__(self, df_train, df_test, metadata) -> None:
+        model = MLPClassifier(random_state=42, max_iter=1000, hidden_layer_sizes=(100, 100, 100, 100, 100, 100, 100, 100, 100, 100,))
+
+        df_train, df_test = one_hot_encode(df_train, df_test, metadata['categorical_cols'])
+
+        super().__init__('Multilayer Perceptron Classification (10 hidden layers)', df_train, df_test, model, metadata['target'])
+
+
 class SupportVectorMachineExperiment(ClassificationExperiment):
     """
     This model needs the categorical columns from the metadata to one-hot-encode them.
@@ -106,3 +133,16 @@ class SupportVectorMachineExperiment(ClassificationExperiment):
 
         super().__init__('Support Vector Machine Classification', df_train, df_test, model, metadata['target'],
                          StandardScaler())
+
+
+class GradientBoostingClassifierExperiment(ClassificationExperiment):
+    """
+    This model needs the categorical columns from the metadata to one-hot-encode them.
+    Min-Max-Normalisation should be used for scaling the features, if wanted.
+    """
+    def __init__(self, df_train, df_test, metadata) -> None:
+        model = GradientBoostingClassifier(random_state=42)
+
+        df_train, df_test = one_hot_encode(df_train, df_test, metadata['categorical_cols'])
+
+        super().__init__('Gradient Boosting Classification', df_train, df_test, model, metadata['target'])

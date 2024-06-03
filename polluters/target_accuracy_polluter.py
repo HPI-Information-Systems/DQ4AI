@@ -76,9 +76,9 @@ class TargetAccuracyPolluter(Polluter):
             return float(1 - mean(absolute_target_difference / mean(df_clean[[self.target_col]])))
 
     def _add_noise(self, df: DataFrame):
-        mean = 0
+        mean_val = 0
         std = self.pollution_level
-        noise_distribution_vector = self.random_generator.normal(mean, std, size=len(df.index))
+        noise_distribution_vector = self.random_generator.normal(mean_val, std, size=len(df.index))
         df_mean = mean(df[self.target_col])
 
         return df[[self.target_col]].values + reshape(noise_distribution_vector * df_mean, (-1, 1))

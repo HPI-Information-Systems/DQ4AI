@@ -39,6 +39,7 @@ In the polluters directory, there are:
 - Andrea Nathansen
 - Nele Sina Noack
 - Hendrik Patzlaff
+- Sedir Mohammed
 - Hazar Harmouch 
 - Felix Naumann
 
