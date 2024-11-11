@@ -1,0 +1,506 @@
+{
+    "random_seeds": [
+        2967137,
+        6837295,
+        235679,
+        5690805,
+        502307
+    ],
+    "SouthGermanCredit.csv": {
+        "categorical_cols": [
+            "status",
+            "credit_history",
+            "purpose",
+            "savings",
+            "employment_duration",
+            "installment_rate",
+            "personal_status_sex",
+            "other_debtors",
+            "present_residence",
+            "property",
+            "other_installment_plans",
+            "housing",
+            "number_credits",
+            "job",
+            "people_liable",
+            "telephone",
+            "foreign_worker"
+        ],
+        "placeholders": {
+            "categorical": "missing",
+            "numerical": -1
+        },
+        "n_samples": 1000,
+        "numerical_cols": [
+            "duration",
+            "amount",
+            "age"
+        ],
+        "target": "credit_risk"
+    },
+    "covid_data_pre_processed.csv": {
+        "categorical_cols": [
+            "USMER",
+            "MEDICAL_UNIT",
+            "SEX",
+            "PATIENT_TYPE",
+            "PNEUMONIA",
+            "DIABETES",
+            "COPD",
+            "ASTHMA",
+            "INMSUPR",
+            "HIPERTENSION",
+            "OTHER_DISEASE",
+            "CARDIOVASCULAR",
+            "OBESITY",
+            "RENAL_CHRONIC",
+            "TOBACCO",
+            "CLASIFFICATION_FINAL"
+        ],
+        "placeholders": {
+            "categorical": "missing",
+            "numerical": -1
+        },
+        "n_samples": 1025152,
+        "numerical_cols": [
+            "AGE"
+        ],
+        "target": "DIED"
+    },
+    "covid_data_pre_processed_regression.csv": {
+        "categorical_cols": [
+            "USMER",
+            "MEDICAL_UNIT",
+            "SEX",
+            "PATIENT_TYPE",
+            "PNEUMONIA",
+            "DIABETES",
+            "COPD",
+            "ASTHMA",
+            "INMSUPR",
+            "HIPERTENSION",
+            "OTHER_DISEASE",
+            "CARDIOVASCULAR",
+            "OBESITY",
+            "RENAL_CHRONIC",
+            "TOBACCO",
+            "CLASIFFICATION_FINAL",
+            "DIED"
+        ],
+        "placeholders": {
+            "categorical": "missing",
+            "numerical": -1
+        },
+        "n_samples": 1025152,
+        "numerical_cols": [
+        ],
+        "target": "AGE",
+        "discr_step_size": 10,
+        "class_balance_polluter_classes": [0, 1, 2]
+    },
+    "covid_data_pre_processed_clustering.csv": {
+        "categorical_cols": [
+            "USMER",
+            "MEDICAL_UNIT",
+            "SEX",
+            "PATIENT_TYPE",
+            "PNEUMONIA",
+            "DIABETES",
+            "COPD",
+            "ASTHMA",
+            "INMSUPR",
+            "HIPERTENSION",
+            "OTHER_DISEASE",
+            "CARDIOVASCULAR",
+            "OBESITY",
+            "RENAL_CHRONIC",
+            "TOBACCO",
+            "DIED"
+        ],
+        "placeholders": {
+            "categorical": "missing",
+            "numerical": -1
+        },
+        "n_samples": 25000,
+        "numerical_cols": [
+            "AGE"
+        ],
+        "target": "CLASIFFICATION_FINAL"
+    },
+    "TelcoCustomerChurn.csv": {
+        "categorical_cols": [
+            "PaymentMethod",
+            "PaperlessBilling",
+            "Contract",
+            "StreamingMovies",
+            "StreamingTV",
+            "TechSupport",
+            "DeviceProtection",
+            "OnlineBackup",
+            "OnlineSecurity",
+            "InternetService",
+            "MultipleLines",
+            "PhoneService",
+            "Dependents",
+            "Partner",
+            "SeniorCitizen",
+            "gender"
+        ],
+        "placeholders": {
+            "categorical": {
+                "Contract": "empty",
+                "Dependents": "empty",
+                "DeviceProtection": "empty",
+                "InternetService": "empty",
+                "MultipleLines": "empty",
+                "OnlineBackup": "empty",
+                "OnlineSecurity": "empty",
+                "PaperlessBilling": "empty",
+                "Partner": "empty",
+                "PaymentMethod": "empty",
+                "PhoneService": "empty",
+                "SeniorCitizen": -1,
+                "StreamingMovies": "empty",
+                "StreamingTV": "empty",
+                "TechSupport": "empty",
+                "gender": "empty"
+            },
+            "numerical": -1
+        },
+        "n_samples": 7032,
+        "numerical_cols": [
+            "TotalCharges",
+            "MonthlyCharges",
+            "tenure"
+        ],
+        "target": "Churn"
+    },
+    "bank.csv": {
+        "categorical_cols": [
+            "job",
+            "marital"
+        ],
+        "placeholders": {
+            "categorical": "unknown",
+            "numerical": -1
+        },
+        "n_samples": 39439,
+        "numerical_cols": [
+            "age"
+        ],
+        "target": "education"
+    },
+    "cmc.data": {
+        "categorical_cols": [
+            "Wife's education",
+            "Husband's education",
+            "Wife's religion",
+            "Wife's now working?",
+            "Husband's occupation",
+            "Standard-of-living index",
+            "Media exposure"
+        ],
+        "placeholders": {
+            "categorical": -1,
+            "numerical": -1
+        },
+        "n_samples": 1473,
+        "numerical_cols": [
+            "Wife's age",
+            "Number of children"
+        ],
+        "target": "Contraceptive method used"
+    },
+    "covtype.csv": {
+        "categorical_cols": [
+            "F10",
+            "F11",
+            "F12",
+            "F13",
+            "F14",
+            "F15",
+            "F16",
+            "F17",
+            "F18",
+            "F19",
+            "F20",
+            "F21",
+            "F22",
+            "F23",
+            "F24",
+            "F25",
+            "F26",
+            "F27",
+            "F28",
+            "F29",
+            "F30",
+            "F31",
+            "F32",
+            "F33",
+            "F34",
+            "F35",
+            "F36",
+            "F37",
+            "F38",
+            "F39",
+            "F40",
+            "F41",
+            "F42",
+            "F43",
+            "F44",
+            "F45",
+            "F46",
+            "F47",
+            "F48",
+            "F49",
+            "F50",
+            "F51",
+            "F52",
+            "F53"
+        ],
+        "placeholders": {
+            "categorical": -1,
+            "numerical": {
+                "F00": -1,
+                "F01": -1,
+                "F02": -1,
+                "F03": -1,
+                "F04": -9000,
+                "F05": -1,
+                "F06": -1,
+                "F07": -1,
+                "F08": -1,
+                "F09": -1
+            }
+        },
+        "n_samples": 581012,
+        "numerical_cols": [
+            "F00",
+            "F01",
+            "F02",
+            "F03",
+            "F04",
+            "F05",
+            "F06",
+            "F07",
+            "F08",
+            "F09"
+        ],
+        "target": "class"
+    },
+    "house_prices_prepared.csv": {
+        "categorical_cols": [
+            "MSZoning",
+            "Street",
+            "Alley",
+            "LotShape",
+            "LandContour",
+            "Utilities",
+            "LotConfig",
+            "LandSlope",
+            "Neighborhood",
+            "Condition1",
+            "Condition2",
+            "BldgType",
+            "HouseStyle",
+            "RoofStyle",
+            "RoofMatl",
+            "Exterior1st",
+            "Exterior2nd",
+            "MasVnrType",
+            "ExterQual",
+            "ExterCond",
+            "Foundation",
+            "BsmtQual",
+            "BsmtCond",
+            "BsmtExposure",
+            "BsmtFinType1",
+            "BsmtFinType2",
+            "Heating",
+            "HeatingQC",
+            "CentralAir",
+            "Electrical",
+            "KitchenQual",
+            "Functional",
+            "FireplaceQu",
+            "GarageType",
+            "GarageFinish",
+            "GarageQual",
+            "GarageCond",
+            "PavedDrive",
+            "PoolQC",
+            "Fence",
+            "MiscFeature",
+            "SaleType",
+            "SaleCondition",
+            "MSSubClass",
+            "OverallQual",
+            "OverallCond"
+        ],
+        "placeholders": {
+            "categorical": {
+                "Alley": "empty",
+                "BldgType": "empty",
+                "BsmtCond": "empty",
+                "BsmtExposure": "empty",
+                "BsmtFinType1": "empty",
+                "BsmtFinType2": "empty",
+                "BsmtQual": "empty",
+                "CentralAir": "empty",
+                "Condition1": "empty",
+                "Condition2": "empty",
+                "Electrical": "empty",
+                "ExterCond": "empty",
+                "ExterQual": "empty",
+                "Exterior1st": "empty",
+                "Exterior2nd": "empty",
+                "Fence": "empty",
+                "FireplaceQu": "empty",
+                "Foundation": "empty",
+                "Functional": "empty",
+                "GarageCond": "empty",
+                "GarageFinish": "empty",
+                "GarageQual": "empty",
+                "GarageType": "empty",
+                "Heating": "empty",
+                "HeatingQC": "empty",
+                "HouseStyle": "empty",
+                "KitchenQual": "empty",
+                "LandContour": "empty",
+                "LandSlope": "empty",
+                "LotConfig": "empty",
+                "LotShape": "empty",
+                "MSSubClass": -1,
+                "MSZoning": "empty",
+                "MasVnrType": "empty",
+                "MiscFeature": "empty",
+                "Neighborhood": "empty",
+                "OverallCond": -1,
+                "OverallQual": -1,
+                "PavedDrive": "empty",
+                "PoolQC": "empty",
+                "RoofMatl": "empty",
+                "RoofStyle": "empty",
+                "SaleCondition": "empty",
+                "SaleType": "empty",
+                "Street": "empty",
+                "Utilities": "empty"
+            },
+            "numerical": -1
+        },
+        "n_samples": 1460,
+        "numerical_cols": [
+            "1stFlrSF",
+            "2ndFlrSF",
+            "3SsnPorch",
+            "BedroomAbvGr",
+            "BsmtFinSF1",
+            "BsmtFinSF2",
+            "BsmtFullBath",
+            "BsmtHalfBath",
+            "BsmtUnfSF",
+            "EnclosedPorch",
+            "Fireplaces",
+            "FullBath",
+            "GarageArea",
+            "GarageCars",
+            "GarageYrBlt",
+            "GrLivArea",
+            "HalfBath",
+            "KitchenAbvGr",
+            "LotArea",
+            "LotFrontage",
+            "LowQualFinSF",
+            "MasVnrArea",
+            "MiscVal",
+            "MoSold",
+            "OpenPorchSF",
+            "PoolArea",
+            "ScreenPorch",
+            "TotRmsAbvGrd",
+            "TotalBsmtSF",
+            "WoodDeckSF",
+            "YearBuilt",
+            "YearRemodAdd",
+            "YrSold"
+        ],
+        "target": "SalePrice",
+        "discr_step_size": 100000,
+        "class_balance_polluter_classes": [0, 1, 2]
+    },
+    "imdb_prepared.csv": {
+        "categorical_cols": [
+            "Genre",
+            "Type",
+            "Certificate",
+            "Nudity",
+            "Violence",
+            "Profanity",
+            "Alcohol",
+            "Frightening"
+        ],
+        "placeholders": {
+            "categorical": "empty",
+            "numerical": -1
+        },
+        "n_samples": 5993,
+        "numerical_cols": [
+            "Date",
+            "Votes",
+            "Duration",
+            "Episodes"
+        ],
+        "target": "Rate",
+        "discr_step_size": 1,
+        "class_balance_polluter_classes": [4, 5, 6]
+    },
+    "letter.arff": {
+        "categorical_cols": [],
+        "placeholders": {
+            "categorical": null,
+            "numerical": -1
+        },
+        "n_samples": 20000,
+        "numerical_cols": [
+            "high",
+            "onpix",
+            "width",
+            "x-bar",
+            "x-box",
+            "x-ege",
+            "x-ege.1",
+            "x2bar",
+            "x2ybr",
+            "xegvy",
+            "xy2br",
+            "xybar",
+            "y-bar",
+            "y-box",
+            "y2bar",
+            "yegvx"
+        ],
+        "target": "class"
+    },
+    "vw_prepared.csv": {
+        "categorical_cols": [
+            "model",
+            "transmission",
+            "fuelType"
+        ],
+        "placeholders": {
+            "categorical": "empty",
+            "numerical": -1
+        },
+        "n_samples": 15157,
+        "numerical_cols": [
+            "year",
+            "mileage",
+            "tax",
+            "mpg",
+            "engineSize"
+        ],
+        "target": "price",
+        "discr_step_size": 10000,
+        "class_balance_polluter_classes": [0, 1, 2]
+    }
+}
