@@ -1,0 +1,12 @@
+pandas~=1.5.2
+scikit-learn~=1.3.2
+numpy~=1.22.1
+scipy~=1.7.3
+torch~=2.1.2
+gower~=0.1.2
+tqdm~=4.62.3
+kmodes~=0.12.2
+matplotlib~=3.8.2
+seaborn~=0.13.1
+adjustText~=1.0.3
+pytorch-tabnet==4.1.0
